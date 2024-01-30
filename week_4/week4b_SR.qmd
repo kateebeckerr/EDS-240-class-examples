@@ -1,0 +1,157 @@
+---
+title: "week4_examples"
+format: html
+---
+
+## Notes and Lectures 
+```{r}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+##                                    setup                                 ----
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#..........................load packages.........................
+library(metajam) 
+library(tidyverse)
+
+#...................download data from DataOne...................
+download_d1_data("https://cn.dataone.org/cn/v2/resolve/https%3A%2F%2Fpasta.lternet.edu%2Fpackage%2Fdata%2Feml%2Fknb-lter-hbr%2F208%2F9%2F3b3cf7ea447cb875d7c7d68ebdfd24c7",
+                 path = here::here("week_4")) 
+
+
+
+#  ~ NOTE: I recommend renaming the downloaded folder to 'data/' so that it's ignored by .gitignore! ~
+
+#....................read in downloaded files....................
+stream_chem_all <- read_d1_files(here::here("week_4", "data"))
+
+#........................get the data file.......................
+stream_chem_data <- stream_chem_all$data
+```
+
+
+```{r}
+# basic scatter
+
+p1 <- stream_chem_data %>%
+  filter(waterYr == 2021) %>%
+  ggplot(aes(x = DOC, y = pH)) +
+  geom_point(alpha = 0.5) +
+  geom_rug()
+
+#histogram along margins of plot (rug, how closely clustered they are)
+
+ggExtra::ggMarginal(p1, type = "density", margins = "x")
+
+##ggExtra, save original ggplot as object first 
+
+  
+  
+  
+```  
+
+
+```{r}
+p2 <- stream_chem_data %>%
+  filter(waterYr == 2021) %>%
+  ggplot(aes(x = DOC, y = pH, color = site)) +
+  geom_point(alpha = 0.5) +
+  geom_rug() +
+  theme(legend.position = "bottom")
+
+#histogram along margins of plot (rug, how closely clustered they are)
+
+ggExtra::ggMarginal(p2, type = "density", groupFill = TRUE, groupColour = TRUE)
+
+```
+#trend line, when you have a nbunch of dat apoints and want to draw readers to directionality of points 
+```{r}
+stream_chem_data %>%
+  filter(waterYr == 2021) %>%
+  filter(site == "W8") %>%
+  ggplot(aes(x = DOC, y = pH)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) #adds trend line , method = lm creates linear model, remove error ribbons people would assume its a truly best fit linear model, data isnt linear sp dont fit 
+#local estianted scatter plot smoothing 
+# geom smooth adding trend lines were not properly analzying linear model to ensure it eets assumptions
+#trends lines draws eyes to geenral trend of data 
+```
+
+
+```{r}
+stream_chem_data |> 
+  filter(waterYr == 2021) |> 
+  ggplot(aes(x = DOC, y = pH, color = site, size = Al_ICP)) + 
+  geom_point(alpha = 0.5) +
+  labs(x = "DOC (mg/L)", size = "Al (mg/L)", color = "Site")
+#bubbles, x and y axis should be points of most interest, ard to comapre strenths of asocaitions of variables 
+```
+- use size to represent a third nuemric variable cautiously 
+- hard to seee difference sin sizes 
+- difficult to match a bubbles size to scale of difference in legend 
+- scale size by area NOT BY RADIUS!
+```{r}
+stream_chem_data |> 
+  filter(waterYr == 2021) |> 
+  ggplot(aes(x = DOC, y = pH, color = site, size = Al_ICP)) + 
+  geom_point(alpha = 0.5) +
+  scale_size(range = c(1, 10)) +
+  labs(x = "DOC (mg/L)", size = "Al (mg/L)", color = "Site")
+
+```
+```{r}
+stream_chem_data |> 
+  filter(waterYr == 2021) |> 
+  ggplot(aes(x = DOC, y = pH, color = Al_ICP)) + 
+  geom_point(alpha = 0.5, size = 2) +
+  scale_color_viridis_c() +
+  labs(x = "DOC (mg/L)", color = "Al (mg/L)")
+#remvoe color base donm sites and color of points by aluminum 
+```
+## Sometiemes just too much data! 
+- all overlapping 
+```{r}
+ggplot(stream_chem_data, aes(x = SO4, y = pH)) + 
+  geom_point(size = 0.5, alpha = 0.5)
+
+```
+
+```{r}
+ggplot(stream_chem_data, aes(x = SO4, y = pH)) + 
+  geom_point(size = 0.5, alpha = 0.3) +
+  geom_rug()
+```
+
+```{r}
+ggplot(stream_chem_data, aes(x = SO4, y = pH, color = site)) + 
+  geom_point(size = 0.5, alpha = 0.3) 
+```
+
+```{r}
+ggplot(stream_chem_data, aes(x = SO4, y = pH)) +
+  geom_bin2d() +
+  scale_fill_viridis_c()
+
+- # looking down on cloud of points, poitns wher epoitns are clustered densely are lit up brighter 
+```
+
+```{r}
+ggplot(stream_chem_data, aes(x = SO4, y = pH)) +
+  geom_hex() +
+  scale_fill_viridis_c() + 
+  guides(fill = guide_colourbar(title = "Count", 
+                                barwidth = 1, barheight = 15))  #uide_color_bar : sets title, barwidth, barheight 
+```
+```{r}
+ggplot(stream_chem_data, aes(x = SO4, y = pH)) +
+  geom_density_2d() # include `aes(color = ..level..)` if you want to color contours by level of density
+```
+
+```{r}
+ggplot(stream_chem_data, aes(x = SO4, y = pH)) +
+  geom_density_2d_filled()
+```
+
+```{r}
+
+```
+
